@@ -3,14 +3,22 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 // entrypoint
 func main() {
+	router := chi.NewRouter()
+	router.Use(middleware.Logger)
+
+	router.Get("/hello", basicHandler)
+
 	// create a server instance and storing it as a memory address
 	server := &http.Server{
 		Addr: ":3000",
-		Handler: http.HandlerFunc(basicHandler), // a handler interface used for when our server receives a request
+		Handler: router, // a handler interface used for when our server receives a request
 	}
 
 	// run and listen
