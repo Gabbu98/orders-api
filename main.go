@@ -1,38 +1,19 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"net/http"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/Gabbu98/orders-api/application"
 )
 
 // entrypoint
 func main() {
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
+	app := application.New()
 
-	router.Get("/hello", basicHandler)
-
-	// create a server instance and storing it as a memory address
-	server := &http.Server{
-		Addr: ":3000",
-		Handler: router, // a handler interface used for when our server receives a request
-	}
-
-	// run and listen
-	err := server.ListenAndServe()
+	err := app.Start(context.TODO())
 
 	if err != nil {
-		fmt.Println("Gailed to listen to server", err)
+		fmt.Println("failed to start app: ", err)
 	}
-}
-
-/*
-w - will allow use to write our http response
-r - pointer for inbound request received from the client-side
-*/
-func basicHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, World!"))
 }
