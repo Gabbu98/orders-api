@@ -126,5 +126,34 @@ type FindResult struct {
 }
 
 func (r *RedisRepo) FindAll(ctx context.Context, page FindAllPage) (FindResult, error) {
-	return nil, nil
+	res := r.Client.SScan(ctx, "orders", page.Offset, "*", int64(page.Size))
+
+	keys, cursor, err := res.Result()
+	if err != nil {
+		return FindResult{}, fmt.Errorf("failed to get order ids: %w", err)
+	}
+
+	xs, err := r.Client.MGet(ctx, keys...).Result()
+	if err != nil {
+		return FindResult{}, fmt.Errorf("failed to get orders: %w", err)
+	}
+
+	orders := make([]model.Order, len(xs))
+
+	for i, x := range xs {
+		x := x.(string)
+		var order model.Order
+
+		err := json.Unmarshal([]byte(x), &order)
+		if err != nil {
+			return FindResult{}, fmt.Errorf("failed to decode order json: %w", err)
+		}
+
+		orders[i] = order
+	}
+
+	return FindResult{
+		Orders: orders,
+		Cursor: cursor,
+	}, nil
 }
