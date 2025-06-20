@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/Gabbu98/orders-api/model"
 	"github.com/redis/go-redis/v9"
