@@ -52,8 +52,10 @@ func (a *App) Start(ctx context.Context) error {
 
 	// goroutine that runs server concurrently
 	go func(){
+		
 		// run the server and have it listen to incoming requests
 		err = server.ListenAndServe()
+		
 		if err != nil {
 			// wrap the error inside an Error wrapper
 			ch <- fmt.Errorf("failed to start server: %w", err)
