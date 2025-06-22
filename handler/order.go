@@ -18,7 +18,7 @@ import (
 
 
 type Order struct {
-	Repo	*order.RedisRepo
+	Repo	order.OrderRepository
 }
 
 func (o *Order) Create(w http.ResponseWriter, r *http.Request) {

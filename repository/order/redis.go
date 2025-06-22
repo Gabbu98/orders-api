@@ -132,6 +132,13 @@ func (r *RedisRepo) FindAll(ctx context.Context, page FindAllPage) (FindResult, 
 		return FindResult{}, fmt.Errorf("failed to get order ids: %w", err)
 	}
 
+	if len(keys) == 0 || keys == nil {
+		return FindResult{
+			Orders: []model.Order{},
+			Cursor: cursor,
+		}, nil
+	}
+
 	xs, err := r.Client.MGet(ctx, keys...).Result()
 	if err != nil {
 		return FindResult{}, fmt.Errorf("failed to get orders: %w", err)
