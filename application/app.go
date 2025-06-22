@@ -20,7 +20,7 @@ func New(config Config) *App {
 		rdb: redis.NewClient(&redis.Options{
 			Addr: config.RedisAddress,
 		}),
-		config: config
+		config: config,
 	}
 
 	app.loadRoutes()
@@ -32,7 +32,7 @@ func (a *App) Start(ctx context.Context) error {
 
 	// create a server instance and store its memory address
 	server := &http.Server{
-		Addr: fmt.Sprintf(":%s", a.config.ServerPort,
+		Addr: fmt.Sprintf(":%d", a.config.ServerPort),
 		Handler: a.router,
 	}
 

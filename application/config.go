@@ -1,7 +1,8 @@
 package application
 
-import(
+import (
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -22,7 +23,7 @@ func LoadConfig() Config {
 	if serverPort, exists := os.LookupEnv("SERVER_PORT"); exists {
 		
 		if port, err := strconv.ParseUint(serverPort, 10, 16); err == nil {
-			cfg.ServerPort = serverPort
+			cfg.ServerPort = uint16(port)
 		}
 	}
 
