@@ -25,7 +25,8 @@ func (r *RedisRepo) Insert(ctx context.Context, order model.Order) error {
 		return fmt.Errorf("failed to encode order: %w", err)
 	}
 
-	key := orderIDKey(order.OrderID)
+	// key := orderIDKey(order.OrderID)
+	key := order.OrderID
 
 	txn := r.Client.TxPipeline()
 
@@ -102,7 +103,8 @@ func (r *RedisRepo) Update(ctx context.Context, order model.Order) error {
 		return fmt.Errorf("failed to encode order: %w", err)
 	}
 
-	key := orderIDKey(order.OrderID)
+	// key := orderIDKey(order.OrderID)
+	key := order.OrderID
 
 	err = r.Client.SetXX(ctx, key, string(data), 0).Err()
 	if errors.Is(err, redis.Nil) {

@@ -8,47 +8,14 @@ import (
 	"github.com/Gabbu98/orders-api/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type MongoRepo struct {
 	Client *mongo.Client
 }
 
-// This method closes mongoDB connection and cancel context. Func exectues first, then cancel().
-func close(client *mongo.Client, ctx context.Context, cancel context.CancelFunc){
-	defer cancel()
-	defer func() {
-		if err := client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
-}
-
-// returns a mongo.Client, context.Context, 
-// context.CancelFunc and error.
-// mongo.Client will be used for further database 
-// operation. context.Context will be used set 
-// deadlines for process. context.CancelFunc will 
-// be used to cancel context and resource 
-// associated with it.
-// func connect(uri string) (*mongo.Client, context.Context, context.CancelFunc, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
-
-// 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-
-// 	return client, ctx, cancel, err
-// }
-
 func getMongoContext(m *MongoRepo) (*mongo.Collection) {
-		// get Client, Context, CancelFunc and err from connect method.
-    // client, ctx, cancel, err := connect("mongodb://localhost:27017")
-    // if err != nil {
-    //     panic(err)
-    // }
-    
-    // // Release resource when main function is returned.
-    // defer close(client, ctx, cancel)
-
 	collection := m.Client.Database("orders").Collection("orders")
 
 	return collection
@@ -103,7 +70,25 @@ func(m *MongoRepo) Update(ctx context.Context, order model.Order) error {
 }
 
 func (m *MongoRepo) FindAll(ctx context.Context, page FindAllPage) (FindResult, error) {
-	return FindResult{}, nil
+	collection := getMongoContext(m)
+	var orders []model.Order
+
+	l := int64(page.Size)
+	skip := int64(page.Offset)
+	
+	result, err := collection.Find(ctx, options.FindOptions{Limit: &l, Skip: &skip})
+	if err != nil {
+		return FindResult{}, fmt.Errorf("failed to get orders: %w", err)
+	}
+	
+	if err := result.All(ctx, &orders); err != nil {
+		return FindResult{}, err
+	}
+
+	return FindResult{
+		Orders: orders,
+		Cursor: uint64(skip),
+	}, nil
 }
 
 // https://dev.to/hackmamba/build-a-rest-api-with-golang-and-mongodb-fiber-version-4la0

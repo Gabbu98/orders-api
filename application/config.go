@@ -6,18 +6,24 @@ import (
 )
 
 type Config struct {
-	RedisAddress string
-	ServerPort uint16
+	RedisAddress	string
+	MongoAddress	string
+	ServerPort 		uint16
 }
 
 func LoadConfig() Config {
 	cfg := Config{
 		RedisAddress: "localhost:6379",
+		MongoAddress: "mongodb://root:pass@mongodb.middleware:27017/admin?replicaSet=rs0",
 		ServerPort: 3000,
 	}
 
 	if redisAddr, exists := os.LookupEnv("REDIS_ADDR"); exists {
 		cfg.RedisAddress = redisAddr
+	}
+
+	if mongoAddr, exists := os.LookupEnv("MONGO_ADDR"); exists {
+		cfg.MongoAddress = mongoAddr
 	}
 
 	if serverPort, exists := os.LookupEnv("SERVER_PORT"); exists {

@@ -32,7 +32,7 @@ func (a *App) loadRoutes() {
 func (a *App) loadOrderRoutes(router chi.Router) {
 	orderHandler := &handler.Order{
 		Repo: &order.MongoRepo{
-			Client: a.mdb,
+			Client: a.Mdb.Client,
 		},
 	}
 

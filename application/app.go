@@ -3,7 +3,6 @@ package application
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -15,30 +14,62 @@ import (
 type App struct {
 	router http.Handler
 	rdb		*redis.Client
-	mdb		*mongo.Client
+	Mdb		*MongoClient
 	config Config
 }
 
+
+
+// This is a user defined method that returns mongo.Client, 
+// context.Context, context.CancelFunc and error.
+// mongo.Client will be used for further database operation.
+// context.Context will be used set deadlines for process.
+// context.CancelFunc will be used to cancel context and 
+// resource associated with it.
+func connect(uri string)(*mongo.Client, context.Context, 
+                          context.CancelFunc, error) {
+                          
+    // ctx will be used to set deadline for process, here 
+    // deadline will of 30 seconds.
+    ctx, cancel := context.WithTimeout(context.Background(), 
+                                       10 * time.Second)
+    
+    // mongo.Connect return mongo.Client method
+    client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+    return client, ctx, cancel, err
+}
+
+type MongoClient struct {
+	Client 	*mongo.Client
+	Ctx		*context.Context
+	Cancel  context.CancelFunc
+}
+
 func New(config Config) *App {
-	clientOpts := options.Client().ApplyURI("")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	mdb, err := mongo.Connect(ctx, clientOpts)
+	
+	client, ctx, cancel, err := connect("mongodb://root:pass@mongodb.middleware:27017/admin?replicaSet=rs0")
 	if err != nil {
-		log.Fatalf("Error while connecting to MongoDB: %v", err)
-	}
+        panic(err)
+    }
 
+	// Release resource when the main
+    // function is returned.
+    // defer closeMongo(client, ctx, cancel)
+	
 	app := &App{
 		rdb: redis.NewClient(&redis.Options{
 			Addr: config.RedisAddress,
 		}),
-		mdb: mdb,
+		Mdb: &MongoClient{
+			Client: client,
+			Ctx: &ctx,
+			Cancel: cancel,
+		},
 		config: config,
 	}
 
 	app.loadRoutes()
-
+	
 	return app
 }
 
