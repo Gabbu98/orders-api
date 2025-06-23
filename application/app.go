@@ -3,23 +3,37 @@ package application
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type App struct {
 	router http.Handler
 	rdb		*redis.Client
+	mdb		*mongo.Client
 	config Config
 }
 
 func New(config Config) *App {
+	clientOpts := options.Client().ApplyURI("")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	mdb, err := mongo.Connect(ctx, clientOpts)
+	if err != nil {
+		log.Fatalf("Error while connecting to MongoDB: %v", err)
+	}
+
 	app := &App{
 		rdb: redis.NewClient(&redis.Options{
 			Addr: config.RedisAddress,
 		}),
+		mdb: mdb,
 		config: config,
 	}
 

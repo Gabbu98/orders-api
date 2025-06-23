@@ -4,12 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/Gabbu98/orders-api/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type MongoRepo struct {
@@ -33,39 +31,39 @@ func close(client *mongo.Client, ctx context.Context, cancel context.CancelFunc)
 // deadlines for process. context.CancelFunc will 
 // be used to cancel context and resource 
 // associated with it.
-func connect(uri string) (*mongo.Client, context.Context, context.CancelFunc, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
+// func connect(uri string) (*mongo.Client, context.Context, context.CancelFunc, error) {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+// 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 
-	return client, ctx, cancel, err
-}
+// 	return client, ctx, cancel, err
+// }
 
-func getMongoContext(m *MongoRepo) (context.Context, *mongo.Collection) {
+func getMongoContext(m *MongoRepo) (*mongo.Collection) {
 		// get Client, Context, CancelFunc and err from connect method.
-    client, ctx, cancel, err := connect("mongodb://localhost:27017")
-    if err != nil {
-        panic(err)
-    }
+    // client, ctx, cancel, err := connect("mongodb://localhost:27017")
+    // if err != nil {
+    //     panic(err)
+    // }
     
-    // Release resource when main function is returned.
-    defer close(client, ctx, cancel)
+    // // Release resource when main function is returned.
+    // defer close(client, ctx, cancel)
 
-	collection := m.Client.Database("").Collection("")
+	collection := m.Client.Database("orders").Collection("orders")
 
-	return ctx, collection
+	return collection
 }
 
-func (m *MongoRepo) Insert(order model.Order) error {
-	ctx, collection := getMongoContext(m)
+func (m *MongoRepo) Insert(ctx context.Context, order model.Order) error {
+	collection := getMongoContext(m)
 
 	_, err := collection.InsertOne(ctx, order)
 
 	return err
 }
 
-func(m *MongoRepo) FindByID(id uint64) (model.Order, error) {
-	ctx, collection := getMongoContext(m)
+func(m *MongoRepo) FindByID(ctx context.Context, id uint64) (model.Order, error) {
+	collection := getMongoContext(m)
 
 	var result model.Order
 	err := collection.FindOne(ctx, bson.M{"_id":id}).Decode(&result)
@@ -78,8 +76,8 @@ func(m *MongoRepo) FindByID(id uint64) (model.Order, error) {
 	return result, err
 }
 
-func(m *MongoRepo) DeleteByID(id uint64) error {
-	ctx, collection := getMongoContext(m)
+func(m *MongoRepo) DeleteByID(ctx context.Context, id uint64) error {
+	collection := getMongoContext(m)
 
 	_, err := collection.DeleteOne(ctx, bson.M{"_id":id})
 	if errors.Is(err, mongo.ErrNoDocuments) {
@@ -91,8 +89,8 @@ func(m *MongoRepo) DeleteByID(id uint64) error {
 	return err
 }
 
-func(m *MongoRepo) Update(order model.Order) error {
-	ctx, collection := getMongoContext(m)
+func(m *MongoRepo) Update(ctx context.Context, order model.Order) error {
+	collection := getMongoContext(m)
 
 	_, err := collection.UpdateByID(ctx, order.OrderID, order)
 	if errors.Is(err, mongo.ErrNoDocuments) {
@@ -102,6 +100,10 @@ func(m *MongoRepo) Update(order model.Order) error {
 	} 
 
 	return err
+}
+
+func (m *MongoRepo) FindAll(ctx context.Context, page FindAllPage) (FindResult, error) {
+	return FindResult{}, nil
 }
 
 // https://dev.to/hackmamba/build-a-rest-api-with-golang-and-mongodb-fiber-version-4la0

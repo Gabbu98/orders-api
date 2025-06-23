@@ -31,8 +31,8 @@ func (a *App) loadRoutes() {
 // logically group routes
 func (a *App) loadOrderRoutes(router chi.Router) {
 	orderHandler := &handler.Order{
-		Repo: &order.RedisRepo{
-			Client: a.rdb,
+		Repo: &order.MongoRepo{
+			Client: a.mdb,
 		},
 	}
 
