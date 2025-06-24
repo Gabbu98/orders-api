@@ -11,8 +11,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/Gabbu98/orders-api/handler/response"
 	"github.com/Gabbu98/orders-api/model"
 	"github.com/Gabbu98/orders-api/repository/order"
+	"github.com/Gabbu98/orders-api/util"
 )
 
 
@@ -86,13 +88,18 @@ func (o *Order) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var response struct {
-		Items	[]model.Order	`json:"items"`
-		Next	uint64			`json:"next,omitempty"` // omits the value in the response if it isnt present
+		Items	[]handler_responses.Order	`json:"items"`
+		Next	uint64				`json:"next,omitempty"` // omits the value in the response if it isnt present
 	}
-	response.Items = res.Orders
+	var orders []handler_responses.Order
+	for i:=0; i<len(res.Orders); i++ {
+		orders = append(orders, util.MapOrderToOrderResponse(res.Orders[i]))
+	}
+
+	response.Items = orders
 	response.Next = res.Cursor
 
-	data, err := json.Marshal(response)
+	data, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
 		fmt.Println("failed to marshal:", err)
 		w.WriteHeader(http.StatusInternalServerError)
