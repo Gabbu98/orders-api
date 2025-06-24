@@ -14,7 +14,7 @@ type Config struct {
 func LoadConfig() Config {
 	cfg := Config{
 		RedisAddress: "localhost:6379",
-		MongoAddress: "mongodb://root:pass@mongodb.middleware:27017/admin?replicaSet=rs0",
+		MongoAddress: "mongodb://localhost:27017",
 		ServerPort: 3000,
 	}
 

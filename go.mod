@@ -4,7 +4,6 @@ go 1.22.2
 
 require (
 	github.com/go-chi/chi/v5 v5.2.1
-	github.com/google/uuid v1.6.0
 	github.com/redis/go-redis/v9 v9.10.0
 	go.mongodb.org/mongo-driver v1.17.4
 )

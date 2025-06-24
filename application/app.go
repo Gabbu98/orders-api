@@ -47,7 +47,7 @@ type MongoClient struct {
 
 func New(config Config) *App {
 	
-	client, ctx, cancel, err := connect("mongodb://root:pass@mongodb.middleware:27017/admin?replicaSet=rs0")
+	client, ctx, cancel, err := connect(config.MongoAddress)
 	if err != nil {
         panic(err)
     }

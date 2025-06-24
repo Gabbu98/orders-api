@@ -72,17 +72,26 @@ func(m *MongoRepo) Update(ctx context.Context, order model.Order) error {
 func (m *MongoRepo) FindAll(ctx context.Context, page FindAllPage) (FindResult, error) {
 	collection := getMongoContext(m)
 	var orders []model.Order
-
+	var or model.Order
 	l := int64(page.Size)
 	skip := int64(page.Offset)
+	options := options.Find()
+	options.SetLimit(l)
+	options.SetSkip(skip)
 	
-	result, err := collection.Find(ctx, options.FindOptions{Limit: &l, Skip: &skip})
+	result, err := collection.Find(ctx, bson.D{}, options)
+	c := collection.FindOne(ctx, bson.M{}).Decode(&or)
+	fmt.Print(c)
 	if err != nil {
 		return FindResult{}, fmt.Errorf("failed to get orders: %w", err)
 	}
 	
-	if err := result.All(ctx, &orders); err != nil {
-		return FindResult{}, err
+	for result.Next(ctx) {
+		var order model.Order
+		if err := result.Decode(&order); err != nil {
+			return FindResult{}, fmt.Errorf("Decode error:", err)
+		}
+		orders = append(orders, order)
 	}
 
 	return FindResult{

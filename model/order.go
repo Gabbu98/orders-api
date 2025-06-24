@@ -6,16 +6,16 @@ import (
 )
 
 type Order struct {
-	OrderID		string		`json:"order_id"`
-	CustomerID	string		`json:"customer_id"`
-	LineItems	[]LineItem	`json:"line_items"`
-	CreatedAt	*time.Time	`json:"created_at"`
-	ShippedAt 	*time.Time	`json:"shipped_at"`
-	CompletedAt *time.Time	`json:"completed_at"`
+	OrderID		string		`bson:"orderId"`
+	CustomerID	string		`bson:"customerId"`
+	LineItems	[]LineItem	`bson:"lineItems"`
+	CreatedAt	*time.Time	`bson:"createdAt"`
+	ShippedAt 	*time.Time	`bson:"shippedAt"`
+	CompletedAt *time.Time	`bson:"completedAt"`
 }
 
 type LineItem struct {
-	ItemID 		string		`json:"item_id"`
-	Quantity 	uint		`json:"quantity"`
-	Price		uint		`json:"price"`
+	ItemID 		string		`bson:"itemId"`
+	Quantity 	uint		`bson:"quantity"`
+	Price		uint		`bson:"price"`
 }
