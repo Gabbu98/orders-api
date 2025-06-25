@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Gabbu98/orders-api/repository/order"
+	"github.com/Gabbu98/orders-api/strategy"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -18,7 +20,24 @@ type App struct {
 	config Config
 }
 
+func (a *App)InitRepositoryStrategies() *strategy.RepositoryStrategies {
+	// var persistenceStrategiesMap [string]
+	mongoRepo := &order.MongoRepo{
+		Client: a.Mdb.Client,
+	} 
+	redisRepo := &order.RedisRepo{
+		Client: a.rdb,
+	}
 
+	var strats map[string]order.OrderRepository = make(map[string]order.OrderRepository)
+
+	strats["MONGO"] = mongoRepo
+	strats["REDIS"] = redisRepo
+
+	return &strategy.RepositoryStrategies{
+		Strategies: &strats,
+	}
+}
 
 // This is a user defined method that returns mongo.Client, 
 // context.Context, context.CancelFunc and error.

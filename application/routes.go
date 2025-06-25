@@ -7,7 +7,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/Gabbu98/orders-api/handler"
-	"github.com/Gabbu98/orders-api/repository/order"
 )
 
 func (a *App) loadRoutes() {
@@ -30,10 +29,13 @@ func (a *App) loadRoutes() {
 
 // logically group routes
 func (a *App) loadOrderRoutes(router chi.Router) {
+	repo, err := (*a.InitRepositoryStrategies()).GetStrategy("MONGO")
+	if err != nil {
+		panic(err)
+	}
+
 	orderHandler := &handler.Order{
-		Repo: &order.MongoRepo{
-			Client: a.Mdb.Client,
-		},
+		Repo: repo,
 	}
 
 	router.Post("/", orderHandler.Create)
